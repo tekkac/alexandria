@@ -93,3 +93,69 @@ fn interpolate<
         index += 1;
     }
 }
+
+use alexandria_searching::binary_search::binary_search_closest as search;
+
+fn interpolate_fast<
+    T,
+    impl TPartialOrd: PartialOrd<T>,
+    impl TNumericLiteral: NumericLiteral<T>,
+    impl TAdd: Add<T>,
+    impl TSub: Sub<T>,
+    impl TMul: Mul<T>,
+    impl TDiv: Div<T>,
+    impl TZeroable: Zeroable<T>,
+    impl TCopy: Copy<T>,
+    impl TDrop: Drop<T>,
+>(
+    x: T, xs: Span<T>, ys: Span<T>, interpolation: Interpolation, extrapolation: Extrapolation
+) -> T {
+    // [Check] Inputs
+    assert(xs.len() == ys.len(), 'Arrays must have the same len');
+    assert(xs.len() >= 2, 'Array must have at least 2 elts');
+
+    // [Check] Extrapolation
+    if x <= *xs[0] {
+        let y = match extrapolation {
+            Extrapolation::Null(()) => Zeroable::zero(),
+            Extrapolation::Constant(()) => *ys[0],
+        };
+        return y;
+    }
+    if x >= *xs[xs.len() - 1] {
+        let y = match extrapolation {
+            Extrapolation::Null(()) => Zeroable::zero(),
+            Extrapolation::Constant(()) => *ys[xs.len() - 1],
+        };
+        return y;
+    }
+
+    // [Compute] Interpolation with binary search
+    let index: u32 = search(xs, x).expect('search error');
+
+    assert(*xs[index + 1] > *xs[index], 'Abscissa must be sorted');
+    assert(x < *xs[index + 1], 'search error');
+
+    match interpolation {
+        Interpolation::Linear(()) => {
+            // y = [(xb - x) * ya + (x - xa) * yb] / (xb - xa)
+            // y = [alpha * ya + beta * yb] / den
+            let den = *xs[index + 1] - *xs[index];
+            let alpha = *xs[index + 1] - x;
+            let beta = x - *xs[index];
+            (alpha * *ys[index] + beta * *ys[index + 1]) / den
+        },
+        Interpolation::Nearest(()) => {
+            // y = ya or yb
+            let alpha = *xs[index + 1] - x;
+            let beta = x - *xs[index];
+            if alpha >= beta {
+                *ys[index]
+            } else {
+                *ys[index + 1]
+            }
+        },
+        Interpolation::ConstantLeft(()) => *ys[index + 1],
+        Interpolation::ConstantRight(()) => *ys[index],
+    }
+}
