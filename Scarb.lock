@@ -48,6 +48,9 @@ version = "0.1.0"
 [[package]]
 name = "alexandria_numeric"
 version = "0.1.0"
+dependencies = [
+ "alexandria_searching",
+]
 
 [[package]]
 name = "alexandria_searching"
