@@ -1,7 +1,7 @@
-use array::ArrayTrait;
 use alexandria_numeric::interpolate::{
     interpolate_fast as interpolate, Interpolation, Extrapolation
 };
+use core::test::test_utils::assert_eq;
 
 #[test]
 #[available_gas(2000000)]
@@ -101,6 +101,27 @@ fn interp_constant_left_test() {
         ) == 17,
         'invalid interpolation'
     );
+}
+
+use debug::PrintTrait;
+
+#[test]
+#[available_gas(2000000)]
+fn interp_constant_left_diff() {
+    let xs: Span<u64> = array![0, 2, 4, 6, 8].span();
+    let ys: Span<u64> = array![0, 2, 4, 6, 8].span();
+    let inter = Interpolation::ConstantLeft;
+    let extra = Extrapolation::Constant;
+    assert_eq(@interpolate(0, xs, ys, inter, extra), @0, 'invalid interpolation 0');
+    assert_eq(@interpolate(1, xs, ys, inter, extra), @2, 'invalid interpolation 1');
+    assert_eq(@interpolate(2, xs, ys, inter, extra), @2, 'invalid interpolation 2');
+    assert_eq(@interpolate(3, xs, ys, inter, extra), @4, 'invalid interpolation 3');
+    assert_eq(@interpolate(4, xs, ys, inter, extra), @4, 'invalid interpolation 4');
+    assert_eq(@interpolate(5, xs, ys, inter, extra), @6, 'invalid interpolation 5');
+    assert_eq(@interpolate(6, xs, ys, inter, extra), @6, 'invalid interpolation 6');
+    assert_eq(@interpolate(7, xs, ys, inter, extra), @8, 'invalid interpolation 7');
+    assert_eq(@interpolate(8, xs, ys, inter, extra), @8, 'invalid interpolation 8');
+    assert_eq(@interpolate(9, xs, ys, inter, extra), @8, 'invalid interpolation 9');
 }
 
 #[test]

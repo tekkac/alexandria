@@ -155,7 +155,14 @@ fn interpolate_fast<
                 *ys[index + 1]
             }
         },
-        Interpolation::ConstantLeft(()) => *ys[index + 1],
+        Interpolation::ConstantLeft(()) => {
+            // Handle equality case: x == *xs[index]
+            if x <= *xs[index] {
+                *ys[index]
+            } else {
+                *ys[index + 1]
+            }
+        },
         Interpolation::ConstantRight(()) => *ys[index],
     }
 }
